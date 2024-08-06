@@ -53,20 +53,28 @@ void InitLoRa() {
   Serial.print("SS: ");
   Serial.println(SS);  
 
-  if(!LoRa.begin(435E6)) {
+  if(!LoRa.begin(4348E5)) {
     Serial.println("Starting LoRa failed!");
     display.println("Starting LoRa failed!");
     display.display();
     while(1);
+  } 
+  else 
+  { 
+    display.println("LoRa listening started!"); 
   }
-
+  display.display();
 }
+
 
 void setup() {
   // Start the Serial communication
   Serial.begin(115200);
 
+  // Initialize the display
   InitDisplay();
+
+  // Initialize LoRa (sx1278) receiver
   InitLoRa();
 }
  

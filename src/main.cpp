@@ -3,6 +3,11 @@
 #include <Adafruit_SSD1306.h>
 #include <SPI.h>
 #include <LoRa.h>
+#include "WiFi.h"
+
+// WiFi credentials.
+const char* WIFI_SSID = "EgbertsIOTExperiments";
+const char* WIFI_PASS = "You missed a starting gun!";
 
 // OLED display dimensions
 #define SCREEN_WIDTH 128
@@ -32,7 +37,7 @@ void InitDisplay() {
   // Display the buffer
   display.display();
 
-  delay(3000);
+  delay(500);
   display.clearDisplay();
 
   display.setTextColor(WHITE);
@@ -66,6 +71,19 @@ void InitLoRa() {
   display.display();
 }
 
+void InitWiFi() {
+  // Connect to WiFi
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    display.println("Connecting to WiFi..");
+    display.display();
+  }
+  display.println("Connected to the WiFi network");
+  display.print("IP: ");
+  display.println(WiFi.localIP());
+  display.display();
+}
 
 void setup() {
   // Start the Serial communication
@@ -73,6 +91,9 @@ void setup() {
 
   // Initialize the display
   InitDisplay();
+
+  // Initialize WiFi 
+  InitWiFi();
 
   // Initialize LoRa (sx1278) receiver
   InitLoRa();

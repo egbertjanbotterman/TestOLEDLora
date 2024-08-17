@@ -6,8 +6,8 @@
 #include "WiFi.h"
 
 // WiFi credentials.
-const char* WIFI_SSID = "EgbertsIOTExperiments";
-const char* WIFI_PASS = "You missed a starting gun!";
+const char* WIFI_SSID = "FritzseBadmuts";
+const char* WIFI_PASS = "There is no sp00n!";
 
 // OLED display dimensions
 #define SCREEN_WIDTH 128
@@ -118,3 +118,10 @@ void loop() {
     display.display();
   }
 }
+
+void PrintIt(const char* message) {
+  display.println(message);
+  display.display();
+  Serial.println(message);
+}
+ 

@@ -55,18 +55,12 @@ void InitDisplay() {
 
 void InitLoRa() {
   // put your setup code here, to run once:
-  Serial.print("MOSI: ");
-  Serial.println(MOSI);
-  Serial.print("MISO: ");
-  Serial.println(MISO);
-  Serial.print("SCK: ");
-  Serial.println(SCK);
-  Serial.print("SS: ");
-  Serial.println(SS);  
 
+  // override the default CS, reset, and IRQ pins (optional)
   LoRa.setPins(SS, RST, DIO0);
 
-  if(!LoRa.begin(4348E5)) {
+  //Start LoRa
+  if(!LoRa.begin(434800000)) {
     Serial.println("Starting LoRa failed!");
     display.println("Starting LoRa failed!");
     display.display();
@@ -75,8 +69,12 @@ void InitLoRa() {
   else 
   { 
     // LoRa.implicitHeaderMode();
-    display.println("LoRa listening started!"); 
+    LoRa.setSyncWord(0x12);
+    LoRa.setSignalBandwidth(625E2);
+    // LoRa.setSpreadingFactor(12);
+    // LoRa.receive();
     LoRa.dumpRegisters(Serial);
+    display.println("LoRa initialized");
   }
   display.display();
 }
@@ -94,7 +92,14 @@ void InitWiFi() {
   display.println(WiFi.localIP());
   display.display();
 
+  // Start the server
   server.begin();
+}
+
+void PrintIt(const char* message) {
+  display.println(message);
+  display.display();
+  Serial.println(message);
 }
 
 void setup() {
@@ -110,17 +115,25 @@ void setup() {
   // Initialize LoRa (sx1278) receiver
   InitLoRa();
 }
- 
+
 void LoRaLoop() {
-  // try to parse packet
+
+  // try to parse a packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
+    // Clear display for new packet
+    display.clearDisplay();
+
     // received a packet
     display.print("Received packet '");
+    Serial.print("Received packet '");
 
     // read packet
     while (LoRa.available()) {
-      display.print((char)LoRa.read());
+
+      char c = LoRa.read();
+      display.print(c);
+      Serial.print(c);
     }
 
     // print RSSI of packet
@@ -195,13 +208,7 @@ void WiFiLoop()
 void loop() {
   // put your main code here, to run repeatedly:
   LoRaLoop();
-  //WiFiLoop();
+  WiFiLoop();
 }
 
-
-void PrintIt(const char* message) {
-  display.println(message);
-  display.display();
-  Serial.println(message);
-}
  

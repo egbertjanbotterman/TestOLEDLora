@@ -50,6 +50,9 @@ void InitDisplay() {
   display.display();
 }
 
+#define RST 4
+#define DIO0 15
+
 void InitLoRa() {
   // put your setup code here, to run once:
   Serial.print("MOSI: ");
@@ -61,6 +64,8 @@ void InitLoRa() {
   Serial.print("SS: ");
   Serial.println(SS);  
 
+  LoRa.setPins(SS, RST, DIO0);
+
   if(!LoRa.begin(4348E5)) {
     Serial.println("Starting LoRa failed!");
     display.println("Starting LoRa failed!");
@@ -71,6 +76,7 @@ void InitLoRa() {
   { 
     // LoRa.implicitHeaderMode();
     display.println("LoRa listening started!"); 
+    LoRa.dumpRegisters(Serial);
   }
   display.display();
 }
@@ -189,7 +195,7 @@ void WiFiLoop()
 void loop() {
   // put your main code here, to run repeatedly:
   LoRaLoop();
-  WiFiLoop();
+  //WiFiLoop();
 }
 
 

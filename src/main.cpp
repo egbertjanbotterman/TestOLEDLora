@@ -200,8 +200,12 @@ void WiFiLoop()
 
 int packets = 0;
 
-void ProcessNewPacket() {
-  if (!newPacket) return;
+void ProcesLoRaPacket() {
+
+  // New packet received?
+  if (!newPacket) 
+    return;
+
   display.clearDisplay();
   display.setCursor(0,0);
   display.printf("Received %d\nRSSI: %d\n", ++packets, lastRSSI);
@@ -214,7 +218,7 @@ void ProcessNewPacket() {
 void loop() {
   // put your main code here, to run repeatedly:
   // LoRaLoop();
-  ProcessNewPacket();
+  ProcesLoRaPacket();
   WiFiLoop();
 }
 

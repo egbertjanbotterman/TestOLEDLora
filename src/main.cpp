@@ -54,7 +54,8 @@ String incoming = "";
 int lastRSSI = 0;
 bool newPacket = false;
 
-void onReceive(int packetSize) {
+// Interrupt handler, so no serial.print() in here!
+void onReceiveIRQ(int packetSize) {
 
   incoming = "";
   for (int i = 0; i < packetSize; i++) {
@@ -62,22 +63,15 @@ void onReceive(int packetSize) {
   }
   lastRSSI = LoRa.packetRssi();
   newPacket = true;
-    // print RSSI of packet
-    //display.print("' with RSSI ");
-    //display.println(LoRa.packetRssi());
-    //display.display();
-    //Serial.print("' with RSSI ");
-    //Serial.println(LoRa.packetRssi());
 }
 
 
+// SX1278 pins
+#define RST 15    // GPIO15 -- SX1278 RST
+#define DIO0 4    // GPIO4  -- SX1278 DIO0
 
-#define RST 15
-#define DIO0 4
-
+// Initialize LoRa (sx1278) receiver
 void InitLoRa() {
-  // put your setup code here, to run once:
-
   // override the default CS, reset, and IRQ pins (optional)
   LoRa.setPins(SS, RST, DIO0);
 
@@ -91,15 +85,15 @@ void InitLoRa() {
   else 
   { 
     // LoRa.implicitHeaderMode();
-    LoRa.setSyncWord(0x12);
+    LoRa.setSyncWord(0xC0);
     LoRa.setSignalBandwidth(625E2);
     LoRa.setSpreadingFactor(12);
 
     // LoRa.setGain(6);
     
-    LoRa.onReceive(onReceive);
+    LoRa.onReceive(onReceiveIRQ);
     LoRa.receive();
-    // LoRa.dumpRegisters(Serial);
+
     display.println("LoRa initialized");
   }
   display.display();
@@ -136,13 +130,11 @@ void setup() {
   InitDisplay();
 
   // Initialize WiFi 
-  //InitWiFi();
+  InitWiFi();
 
   // Initialize LoRa (sx1278) receiver
   InitLoRa();
 }
-
-int packets = 0;
 
 void WiFiLoop()
 {
@@ -206,7 +198,10 @@ void WiFiLoop()
   }
 }
 
+int packets = 0;
+
 void ProcessNewPacket() {
+  if (!newPacket) return;
   display.clearDisplay();
   display.setCursor(0,0);
   display.printf("Received %d\nRSSI: %d\n", ++packets, lastRSSI);
@@ -219,11 +214,8 @@ void ProcessNewPacket() {
 void loop() {
   // put your main code here, to run repeatedly:
   // LoRaLoop();
-  //WiFiLoop();
-
-  if (newPacket) {
-    ProcessNewPacket();
-  }
+  ProcessNewPacket();
+  WiFiLoop();
 }
 
  

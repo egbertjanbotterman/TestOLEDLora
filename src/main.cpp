@@ -50,8 +50,30 @@ void InitDisplay() {
   display.display();
 }
 
-#define RST 4
-#define DIO0 15
+String incoming = "";
+int lastRSSI = 0;
+bool newPacket = false;
+
+void onReceive(int packetSize) {
+
+  incoming = "";
+  for (int i = 0; i < packetSize; i++) {
+    incoming += (char)LoRa.read();
+  }
+  lastRSSI = LoRa.packetRssi();
+  newPacket = true;
+    // print RSSI of packet
+    //display.print("' with RSSI ");
+    //display.println(LoRa.packetRssi());
+    //display.display();
+    //Serial.print("' with RSSI ");
+    //Serial.println(LoRa.packetRssi());
+}
+
+
+
+#define RST 15
+#define DIO0 4
 
 void InitLoRa() {
   // put your setup code here, to run once:
@@ -72,9 +94,12 @@ void InitLoRa() {
     LoRa.setSyncWord(0x12);
     LoRa.setSignalBandwidth(625E2);
     LoRa.setSpreadingFactor(12);
+
+    // LoRa.setGain(6);
     
+    LoRa.onReceive(onReceive);
     LoRa.receive();
-    LoRa.dumpRegisters(Serial);
+    // LoRa.dumpRegisters(Serial);
     display.println("LoRa initialized");
   }
   display.display();
@@ -116,38 +141,8 @@ void setup() {
   // Initialize LoRa (sx1278) receiver
   InitLoRa();
 }
+
 int packets = 0;
-
-void LoRaLoop() {
-
-  // try to parse a packet
-  int packetSize = LoRa.parsePacket();
-  if (packetSize) {
-    // Clear display for new packet
-    display.clearDisplay();
-
-    display.setCursor(0,0);
-
-    // received a packet
-    display.printf("Received packet %d \n'", ++packets);
-    Serial.print("Received packet '");
-
-    // read packet
-    while (LoRa.available()) {
-
-      char c = LoRa.read();
-      display.print(c);
-      Serial.print(c);
-    }
-
-    // print RSSI of packet
-    display.print("' with RSSI ");
-    display.println(LoRa.packetRssi());
-    display.display();
-    Serial.print("' with RSSI ");
-    Serial.println(LoRa.packetRssi());
-  }
-}
 
 void WiFiLoop()
 {
@@ -211,10 +206,24 @@ void WiFiLoop()
   }
 }
 
+void ProcessNewPacket() {
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.printf("Received %d\nRSSI: %d\n", ++packets, lastRSSI);
+  display.println(incoming);
+  display.display();
+  Serial.printf("Received %d, RSSI: %d :'%s'\n", packets, lastRSSI, incoming.c_str());
+  newPacket = false;
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
-  LoRaLoop();
+  // LoRaLoop();
   //WiFiLoop();
+
+  if (newPacket) {
+    ProcessNewPacket();
+  }
 }
 
  

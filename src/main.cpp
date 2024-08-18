@@ -71,8 +71,9 @@ void InitLoRa() {
     // LoRa.implicitHeaderMode();
     LoRa.setSyncWord(0x12);
     LoRa.setSignalBandwidth(625E2);
-    // LoRa.setSpreadingFactor(12);
-    // LoRa.receive();
+    LoRa.setSpreadingFactor(12);
+    
+    LoRa.receive();
     LoRa.dumpRegisters(Serial);
     display.println("LoRa initialized");
   }
@@ -110,11 +111,12 @@ void setup() {
   InitDisplay();
 
   // Initialize WiFi 
-  InitWiFi();
+  //InitWiFi();
 
   // Initialize LoRa (sx1278) receiver
   InitLoRa();
 }
+int packets = 0;
 
 void LoRaLoop() {
 
@@ -124,8 +126,10 @@ void LoRaLoop() {
     // Clear display for new packet
     display.clearDisplay();
 
+    display.setCursor(0,0);
+
     // received a packet
-    display.print("Received packet '");
+    display.printf("Received packet %d \n'", ++packets);
     Serial.print("Received packet '");
 
     // read packet
@@ -140,6 +144,8 @@ void LoRaLoop() {
     display.print("' with RSSI ");
     display.println(LoRa.packetRssi());
     display.display();
+    Serial.print("' with RSSI ");
+    Serial.println(LoRa.packetRssi());
   }
 }
 
@@ -208,7 +214,7 @@ void WiFiLoop()
 void loop() {
   // put your main code here, to run repeatedly:
   LoRaLoop();
-  WiFiLoop();
+  //WiFiLoop();
 }
 
  

@@ -5,6 +5,10 @@
 #include <LoRa.h>
 #include "Esp32BLE.h"
 
+// The ESP32 bluetooth BLE device name
+
+Esp32BLE* ble;
+
 // OLED display dimensions
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -14,9 +18,6 @@
 
 // Initialize the display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-
-
 void InitDisplay() {
   // Initialize the display
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -49,7 +50,7 @@ String incoming = "";
 int lastRSSI = 0;
 bool newPacket = false;
 
-// Interrupt handler, so no serial.print() in here!
+// Interrupt handler, so no serial.print(), or BLE traffic in here!
 void onReceiveIRQ(int packetSize) {
 
   incoming = "";
@@ -103,6 +104,9 @@ void setup() {
 
   // Initialize LoRa (sx1278) receiver
   InitLoRa();
+
+  // Initialize the BLE device
+  ble = new Esp32BLE("ESP32_LoRa_EJB");
 }
 
 

@@ -50,6 +50,8 @@ private:
 public:
     Esp32BLE(String deviceName);
     ~Esp32BLE();
+
+    BLEServer* GetServer() { return pServer; }
 };
 
 

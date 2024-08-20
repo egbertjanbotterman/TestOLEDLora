@@ -3,7 +3,7 @@
 #include <Adafruit_SSD1306.h>
 #include <SPI.h>
 #include <LoRa.h>
-#include "esp32ble.h"
+#include "Esp32BLE.h"
 
 // OLED display dimensions
 #define SCREEN_WIDTH 128
@@ -14,6 +14,8 @@
 
 // Initialize the display
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
 
 void InitDisplay() {
   // Initialize the display
@@ -108,17 +110,20 @@ int packets = 0;
 
 void ProcesLoRaPacket() {
 
-  // New packet received?
+  // Is there a new packet?
   if (!newPacket) 
     return;
 
+// Immediately reset the flag    
+  newPacket = false;
+
+// Display the received packet
   display.clearDisplay();
   display.setCursor(0,0);
   display.printf("Received %d\nRSSI: %d\n", ++packets, lastRSSI);
   display.println(incoming);
   display.display();
   Serial.printf("Received %d, RSSI: %d :'%s'\n", packets, lastRSSI, incoming.c_str());
-  newPacket = false;
 }
 
 void loop() {

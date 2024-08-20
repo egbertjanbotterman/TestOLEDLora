@@ -5,7 +5,7 @@
 
 const int ledPin = 2; // Use the appropriate GPIO pin for your setup
 bool deviceConnected = false;
-class esp32ble
+class Esp32BLE
 {
 private:
     BLEServer* pServer = NULL;
@@ -17,9 +17,9 @@ private:
 
     // See the following for generating UUIDs:
     // https://www.uuidgenerator.net/
-    #define SERVICE_UUID                "19b10000-e8f2-537e-4f6c-d104768a1214"
-    #define SENSOR_CHARACTERISTIC_UUID  "19b10001-e8f2-537e-4f6c-d104768a1214"
-    #define LED_CHARACTERISTIC_UUID     "19b10002-e8f2-537e-4f6c-d104768a1214"
+    #define SERVICE_UUID                "19b10000-e8f2-537e-4f6c-d104768a1242"
+    #define SENSOR_CHARACTERISTIC_UUID  "19b10001-e8f2-537e-4f6c-d104768a1242"
+    #define LED_CHARACTERISTIC_UUID     "19b10002-e8f2-537e-4f6c-d104768a1242"
 
     class MyServerCallbacks: public BLEServerCallbacks {
         void onConnect(BLEServer* pServer) {
@@ -48,12 +48,12 @@ private:
     };
 
 public:
-    esp32ble(String deviceName);
-    ~esp32ble();
+    Esp32BLE(String deviceName);
+    ~Esp32BLE();
 };
 
 
-esp32ble::esp32ble(String deviceName)
+Esp32BLE::Esp32BLE(String deviceName)
 {
     // Create the BLE Device
     BLEDevice::init(deviceName.c_str());
@@ -91,6 +91,6 @@ esp32ble::esp32ble(String deviceName)
     pAdvertising->start();
 }
 
-esp32ble::~esp32ble()
+Esp32BLE::~Esp32BLE()
 {
 }

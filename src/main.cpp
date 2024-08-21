@@ -79,13 +79,14 @@ void InitLoRa() {
   } 
   else 
   { 
-    // LoRa.implicitHeaderMode();
+    // Set LoRa parameters
     LoRa.setSyncWord(0xC0);
     LoRa.setSignalBandwidth(625E2);
     LoRa.setSpreadingFactor(12);
 
     // LoRa.setGain(6);
     
+    // Set the DIO0 IRQ handler, and start receiving
     LoRa.onReceive(onReceiveIRQ);
     LoRa.receive();
 

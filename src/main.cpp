@@ -128,8 +128,11 @@ void ProcesLoRaPacket() {
   display.display();
   Serial.printf("Received %d, RSSI: %d :'%s'\n", packets, lastRSSI, incoming.c_str());
 
+  char outgoing[100];
+  sprintf(outgoing, "%d, RSSI: %d\n'%s'\n", packets, lastRSSI, incoming.c_str());
+
   // Send the received packet over BLE  
-  ble->SendData(incoming);
+  ble->SendData(outgoing);
 }
 
 void loop() {

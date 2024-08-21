@@ -108,6 +108,7 @@ Esp32BLE::~Esp32BLE()
 
 void Esp32BLE::SendData(String data)
 {
+    Serial.println("Sending data: " + data);
     pSensorCharacteristic->setValue(data.c_str());
     pSensorCharacteristic->notify();
 }

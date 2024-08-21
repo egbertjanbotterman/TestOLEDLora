@@ -3,8 +3,8 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-const int ledPin = 2; // Use the appropriate GPIO pin for your setup
 bool deviceConnected = false;
+const int ledPin = 2; // Use the appropriate GPIO pin for your setup
 class Esp32BLE
 {
 private:
@@ -32,8 +32,8 @@ private:
     };
     class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
         void onWrite(BLECharacteristic* pLedCharacteristic) {
-            String *value = new String(pLedCharacteristic->getValue());
-            if (value->length() > 0) {
+            String value = pLedCharacteristic->getValue().c_str();
+            if (value.length() > 0) {
             Serial.print("Characteristic event, written: ");
             Serial.println(static_cast<int>(value[0])); // Print the integer value
 
@@ -51,48 +51,79 @@ public:
     Esp32BLE(String deviceName);
     ~Esp32BLE();
 
+    void ProcessLoop();
+    void SendData(String data);
     BLEServer* GetServer() { return pServer; }
 };
 
 
 Esp32BLE::Esp32BLE(String deviceName)
 {
-    // Create the BLE Device
-    BLEDevice::init(deviceName.c_str());
+ // Create the BLE Device
+  BLEDevice::init("ESP32_LoRa_EJB");
 
-    // Create the BLE Server
-    pServer = BLEDevice::createServer();
-    pServer->setCallbacks(new MyServerCallbacks());
+  // Create the BLE Server
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
 
-    // Create the BLE Service
-    BLEService *pService = pServer->createService(SERVICE_UUID);
+  // Create the BLE Service
+  BLEService *pService = pServer->createService(SERVICE_UUID);
 
-    // Create a BLE Characteristic
-    pSensorCharacteristic = pService->createCharacteristic(
-        SENSOR_CHARACTERISTIC_UUID,
-        BLECharacteristic::PROPERTY_READ
-    );
+  // Create a BLE Characteristic
+  pSensorCharacteristic = pService->createCharacteristic(
+                      SENSOR_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
 
-    pSensorCharacteristic->setValue((uint8_t*)&value, 4);
+  // Create the ON button Characteristic
+  pLedCharacteristic = pService->createCharacteristic(
+                      LED_CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_WRITE
+                    );
 
-    // Create a BLE Characteristic
-    pLedCharacteristic = pService->createCharacteristic(
-        LED_CHARACTERISTIC_UUID,
-        BLECharacteristic::PROPERTY_READ |
-        BLECharacteristic::PROPERTY_WRITE
-    );
+  // Register the callback for the ON button characteristic
+  pLedCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
 
-    pLedCharacteristic->setValue((uint8_t*)&value, 4);
-    pLedCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
+  // Create a BLE Descriptor
+  pSensorCharacteristic->addDescriptor(new BLE2902());
+  pLedCharacteristic->addDescriptor(new BLE2902());
 
-    // Start the service
-    pService->start();
+  // Start the service
+  pService->start();
 
-    // Start advertising
-    BLEAdvertising *pAdvertising = pServer->getAdvertising();
-    pAdvertising->start();
-}
+  // Start advertising
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(false);
+  pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
+  BLEDevice::startAdvertising();}
 
 Esp32BLE::~Esp32BLE()
 {
+}
+
+void Esp32BLE::SendData(String data)
+{
+    pSensorCharacteristic->setValue(data.c_str());
+    pSensorCharacteristic->notify();
+}
+
+void Esp32BLE::ProcessLoop()
+{
+    // disconnecting
+    if (!deviceConnected && oldDeviceConnected) {
+        delay(500); // give the bluetooth stack the chance to get things ready
+        pServer->startAdvertising(); // restart advertising
+        Serial.println("start advertising");
+        oldDeviceConnected = deviceConnected;
+    }
+    // connecting
+    if (deviceConnected && !oldDeviceConnected) {
+        // do stuff here on connecting
+        oldDeviceConnected = deviceConnected;
+    }
 }

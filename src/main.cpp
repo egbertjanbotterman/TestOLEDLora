@@ -5,8 +5,7 @@
 #include <LoRa.h>
 #include "Esp32BLE.h"
 
-// The ESP32 bluetooth BLE device name
-
+// The ESP32 bluetooth BLE device
 Esp32BLE* ble;
 
 // OLED display dimensions
@@ -128,12 +127,16 @@ void ProcesLoRaPacket() {
   display.println(incoming);
   display.display();
   Serial.printf("Received %d, RSSI: %d :'%s'\n", packets, lastRSSI, incoming.c_str());
+
+  // Send the received packet over BLE  
+  ble->SendData(incoming);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   // LoRaLoop();
   ProcesLoRaPacket();
+  ble->ProcessLoop();
 }
 
  

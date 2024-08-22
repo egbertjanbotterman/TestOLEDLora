@@ -60,15 +60,23 @@ void onReceiveIRQ(int packetSize) {
   newPacket = true;
 }
 
+void InitBLE() {
+
+
+  // Initialize BLE
+  ble = new Esp32BLE("ESP32_LoRa_EJB");
+  display.println("BLE initialized"); 
+  display.display();
+}
 
 // SX1278 pins
-#define RST 15    // GPIO15 -- SX1278 RST
-#define DIO0 4    // GPIO4  -- SX1278 DIO0
+#define SX1278_RST 15    // GPIO15 -- SX1278 RST
+#define SX1278_DIO0 4    // GPIO4  -- SX1278 DIO0
 
 // Initialize LoRa (sx1278) receiver
 void InitLoRa() {
   // override the default CS, reset, and IRQ pins (optional)
-  LoRa.setPins(SS, RST, DIO0);
+  LoRa.setPins(SS, SX1278_RST, SX1278_DIO0);
 
   //Start LoRa
   if(!LoRa.begin(434800000)) {
@@ -106,9 +114,8 @@ void setup() {
   InitLoRa();
 
   // Initialize the BLE device
-  ble = new Esp32BLE("ESP32_LoRa_EJB");
+  InitBLE();
 }
-
 
 int packets = 0;
 
@@ -139,8 +146,8 @@ void ProcesLoRaPacket() {
 void loop() {
   // put your main code here, to run repeatedly:
   // LoRaLoop();
-  ProcesLoRaPacket();
   ble->ProcessLoop();
+  ProcesLoRaPacket();
 }
 
  

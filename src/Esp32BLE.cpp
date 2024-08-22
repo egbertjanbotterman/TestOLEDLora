@@ -12,7 +12,8 @@ Esp32BLE::Esp32BLE(String deviceName)
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
+  pServerCallbacks = new MyServerCallbacks();
+  pServer->setCallbacks(pServerCallbacks);
 
   // Create the BLE Service
   BLEService *pService = pServer->createService(SERVICE_UUID);
@@ -65,18 +66,19 @@ void Esp32BLE::SendData(String data)
     pSensorCharacteristic->notify();
 }
 
+// Process the BLE loop
 void Esp32BLE::ProcessLoop()
 {
     // disconnecting
-    if (!deviceConnected && oldDeviceConnected) {
+    if (!IsDeviceConnected() && oldDeviceConnected) {
+        Serial.println("Restart advertising");
         delay(500); // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising(); // restart advertising
-        Serial.println("Restart advertising");
-        oldDeviceConnected = deviceConnected;
+        oldDeviceConnected = IsDeviceConnected();
     }
     // connecting
-    if (deviceConnected && !oldDeviceConnected) {
-        oldDeviceConnected = deviceConnected;
+    if (IsDeviceConnected() && !oldDeviceConnected) {
         Serial.println("Connected!");
+        oldDeviceConnected = IsDeviceConnected();
     }
 }
